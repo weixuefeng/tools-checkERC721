@@ -10,7 +10,7 @@ const connection = mysql.createConnection({
 });
 
 
-export function initDB() {
+export async function initDB() {
     connection.connect(function (error) {
         if(error) {
             return console.log(error)
@@ -48,6 +48,18 @@ export async function insertTokenInfo(contractAddress, tokenId, tokenName, token
         console.log('-----------------------------------------------------------------\n\n');
     });
     // connection.end();
+}
+
+export async function queryLastTokenInfo(callback) {
+    const sql = 'select tokenId from tokenData order by id desc limit 1';
+    connection.query(sql,function (err, result) {
+        if(err){
+            console.log('[SELECT ERROR] - ',err.message);
+            return;
+        }
+        callback(result)
+    });
+    // connection.end()
 }
 
 

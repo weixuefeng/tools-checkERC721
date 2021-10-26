@@ -4,7 +4,7 @@ let mock = require("mock-require");
 mock("@ethersproject/signing-key", "./signing-key");
 import ethers = require("ethers");
 import {parseTokenMetaData} from "./functions/TokenMetaData";
-import {closeDB, initDB, insertTokenInfo} from "./db/TokenDao";
+import {closeDB, initDB, insertTokenInfo, queryLastTokenInfo} from "./db/TokenDao";
 import {BigNumber} from "ethers";
 
 // const rpc_url: string = "https://rpc2.newchain.cloud.diynova.com";
@@ -22,10 +22,10 @@ async function getTokenMetaData(tokenId) {
     return tokenMetaData
 }
 
-async function getTokenInfo() {
+async function getTokenInfo(index) {
     const totalSupply = await erc721Contract.totalSupply() as BigNumber
     const totalNumber = parseInt(totalSupply._hex)
-    for(let i = 0; i < totalNumber; i++) {
+    for(let i = index; i < totalNumber; i++) {
         let tokenData = await getTokenMetaData(i)
         if(tokenData.tokenName != undefined && tokenData.tokenName.trim().length > 0) {
             let tokenNumber = tokenData.tokenName.split("#")[1]
@@ -43,10 +43,17 @@ async function insertToken(contractAddress, tokenId, tokenName, tokenNumber) {
 
 
 async function do_work() {
-    initDB()
-    await getTokenInfo()
-    closeDB()
-
+    await initDB()
+    const res = await queryLastTokenInfo(function (res) {
+            if(res.length > 0) {
+                let index = res[0]['tokenId']
+                getTokenInfo(parseInt(index) + 1)
+            } else {
+                getTokenInfo(0)
+            }
+        }
+    )
+    //closeDB()
 }
 
 do_work().catch(err => {
