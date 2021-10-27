@@ -4,11 +4,13 @@ let mock = require("mock-require");
 mock("@ethersproject/signing-key", "./signing-key");
 import ethers = require("ethers");
 import {parseTokenMetaData} from "./functions/TokenMetaData";
-import {closeDB, initDB, insertTokenInfo, queryLastTokenInfo} from "./db/TokenDao";
+import {closeDB, initDB, insertTokenInfo, queryLastTokenInfo, queryTokenIdByNumber} from "./db/TokenDao";
 import {BigNumber} from "ethers";
+import * as fs from "fs";
 
 // const rpc_url: string = "https://rpc2.newchain.cloud.diynova.com";
 const rpc_url: string = "https://cn.rpc.mainnet.diynova.com/";
+const outPutFile = "./tokenInfo.md"
 
 
 const provider = new ethers.providers.JsonRpcProvider(rpc_url);
@@ -41,19 +43,59 @@ async function insertToken(contractAddress, tokenId, tokenName, tokenNumber) {
     insertTokenInfo(contractAddress, tokenId, tokenName, tokenNumber)
 }
 
+async function queryTokenId() {
+    let allInfo = ""
+    for(let num = 1; num < 4; num++) {
+        allInfo += `#${num}\r\n`
+        let result = await queryInfo(num)
+        allInfo += result + "\r\n";
+    }
+    await writeDataToFile(allInfo, outPutFile)
+}
+
+
+async function queryInfo(number){
+    let data = "["
+    let info = await queryTokenIdByNumber(number)
+    if(info instanceof Array) {
+        if(info.length > 0) {
+            for(let i = 0; i < info.length; i++) {
+                let tokenId = info[i]['tokenId']
+                data += tokenId + ","
+            }
+            data = data.substring(0, data.length - 1) + "]" + "\r\n";
+        } else {
+            console.error("not found" + number)
+        }
+    }
+    return data
+}
+
+
+async function writeDataToFile(content, fileName) {
+    fs.promises.writeFile(fileName, content)
+        .then(
+            res => {
+                console.log(`${fileName} write success`)
+            }
+        )
+}
+
 
 async function do_work() {
-    await initDB()
-    const res = await queryLastTokenInfo(function (res) {
-            if(res.length > 0) {
-                let index = res[0]['tokenId']
-                getTokenInfo(parseInt(index) + 1)
-            } else {
-                getTokenInfo(0)
-            }
-        }
-    )
+    console.log("gogogo")
+    // await initDB()
+    // const res = await queryLastTokenInfo(function (res) {
+    //         if(res.length > 0) {
+    //             let index = res[0]['tokenId']
+    //             getTokenInfo(parseInt(index) + 1)
+    //         } else {
+    //             getTokenInfo(0)
+    //         }
+    //     }
+    // )
     //closeDB()
+    await queryTokenId()
 }
 
 do_work().catch(err => {

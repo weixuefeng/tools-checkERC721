@@ -62,6 +62,21 @@ export async function queryLastTokenInfo(callback) {
     // connection.end()
 }
 
+export async function queryTokenIdByNumber(number) {
+    return new Promise(function(resolve, reject) {
+        var query_str = 'select tokenId from tokenData where tokenNumber=?';
+        var query_var = [number];
+        connection.query(query_str, query_var, function (err, rows, fields) {
+            // Call reject on error states,
+            // call resolve with results
+            if (err) {
+                return reject(err);
+            }
+            resolve(rows);
+        });
+    });
+}
+
 
 export async function closeDB() {
     connection.end();
