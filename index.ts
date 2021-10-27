@@ -16,7 +16,7 @@ const outPutFile = "./tokenInfo.md"
 
 const provider = new ethers.providers.JsonRpcProvider(rpc_url);
 
-const contractAddress = "0x990B69BA2e8ad7f3bFAadC2B92BDcED9D9eaC86F"
+const contractAddress = "0x201263022ceae160d5c802fef779d21685218779"
 const erc721Contract = new ethers.Contract(contractAddress, ERC721, provider);
 
 async function getTokenMetaData(tokenId) {
