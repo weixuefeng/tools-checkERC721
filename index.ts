@@ -7,7 +7,6 @@ import {parseTokenMetaData} from "./functions/TokenMetaData";
 import {closeDB, initDB, insertTokenInfo, queryLastTokenInfo, queryTokenIdByNumber} from "./db/TokenDao";
 import {BigNumber} from "ethers";
 import * as fs from "fs";
-import assert from "assert";
 
 // const rpc_url: string = "https://rpc2.newchain.cloud.diynova.com";
 const rpc_url: string = "https://cn.rpc.mainnet.diynova.com/";
@@ -46,7 +45,8 @@ async function insertToken(contractAddress, tokenId, tokenName, tokenNumber) {
 
 async function queryTokenId() {
     let allInfo = ""
-    for(let num = 1; num < 4; num++) {
+    for(let num = 1; num < 1001; num++) {
+        console.log("number is:" + num)
         allInfo += `#${num} `
         const {data, length} = await queryInfo(num)
         allInfo +=` ${length} 个\r\n`;
