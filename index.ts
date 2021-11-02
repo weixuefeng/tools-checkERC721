@@ -13,7 +13,7 @@ const rpc_url: string = "https://cn.rpc.mainnet.diynova.com/";
 
 const provider = new ethers.providers.JsonRpcProvider(rpc_url);
 
-const contractAddress = "0x990B69BA2e8ad7f3bFAadC2B92BDcED9D9eaC86F"
+var contractAddress = "0x990B69BA2e8ad7f3bFAadC2B92BDcED9D9eaC86F"
 const erc721Contract = new ethers.Contract(contractAddress, ERC721, provider);
 
 async function getTokenMetaData(tokenId) {
@@ -22,7 +22,15 @@ async function getTokenMetaData(tokenId) {
     return tokenMetaData
 }
 
-async function getTokenInfo(index) {
+async function getTokenMetaList(tokenIds: number[]) {
+    for(let i = 0; i < tokenIds.length; i++) {
+        let tokenId = tokenIds[i]
+        let tokenMetaData = await getTokenMetaData(tokenId)
+        console.log(tokenMetaData.tokenName)
+    }
+}
+
+async function getTokenInfo(contractAddress, index) {
     const totalSupply = await erc721Contract.totalSupply() as BigNumber
     const totalNumber = parseInt(totalSupply._hex)
     for(let i = index; i < totalNumber; i++) {
@@ -30,7 +38,6 @@ async function getTokenInfo(index) {
         if(tokenData.tokenName != undefined && tokenData.tokenName.trim().length > 0) {
             let tokenNumber = tokenData.tokenName.split("#")[1]
             if(tokenNumber) {
-                console.log(contractAddress, i.toString().trim(), tokenData.tokenName, tokenNumber)
                 await insertToken(contractAddress, i.toString(), tokenData.tokenName, tokenNumber)
             }
         }
@@ -41,24 +48,31 @@ async function insertToken(contractAddress, tokenId, tokenName, tokenNumber) {
     insertTokenInfo(contractAddress, tokenId, tokenName, tokenNumber)
 }
 
-
-async function do_work() {
+async function start1() {
     await initDB()
     const res = await queryLastTokenInfo(function (res) {
             if(res.length > 0) {
                 let index = res[0]['tokenId']
-                getTokenInfo(parseInt(index) + 1)
+                getTokenInfo(contractAddress,parseInt(index) + 1)
             } else {
-                getTokenInfo(0)
+                getTokenInfo(contractAddress, 0)
             }
         }
     )
-    //closeDB()
+}
+
+async function start2() {
+    let res = await getTokenMetaList([1, 2])
+}
+
+async function do_work() {
+    await start2()
 }
 
 do_work().catch(err => {
     console.log(err)
 });
+
 
 
 
